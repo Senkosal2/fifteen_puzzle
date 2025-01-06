@@ -35,12 +35,13 @@ class Main {
             System.out.println("Moves: " + moves);
 
             // display the box
-            for (int i = 0; i < a.length; i++) {
+            for (int i = 0; i < num.length; i++) {
     	        System.out.println("+----+----+----+----+");
-    	        for (int j = 0; j < a[i].length; j++) {
+    	        for (int j = 0; j < num[i].length; j++) {
     	            System.out.print("| ");
-    	            if (a[i][j] < 10) System.out.print("0" + a[i][j] + " ");
-    	            else System.out.print((a[i][j] == 16 ? "  " : a[i][j]) + " ");
+    	            if (num[i][j] == 0) System.out.print("   ");
+    	            else if (num[i][j] < 10) System.out.print("0" + num[i][j] + " ");
+    	            else System.out.print(num[i][j] + " ");
     	            if (j == 3) System.out.print("|");
     	        }
     	        System.out.println(i == 3 ? "\n+----+----+----+----+" : "");
