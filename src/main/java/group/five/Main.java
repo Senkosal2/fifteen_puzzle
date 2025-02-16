@@ -84,10 +84,27 @@ public class Main {
                 }
             } while (!isValid);
 
+            boolean isCreatePuzzleCompleted = false;
             if (option == 1 && mode == 1) {
-                DisplayPuzzle(puzzle);
-                System.out.println("Please number to create the puzzle: ");
-                System.out.println("");
+                do {
+                    DisplayPuzzle(puzzle);
+                    System.out.print("Please number to create the puzzle: ");
+
+                    int countPuzzleNumber = 0;
+                    for (int row = 0; row < puzzle.length; row++) {
+                        for (int col = 0; col < puzzle[row].length; col++) {
+                            countPuzzleNumber++;
+                        }
+                    }
+
+                    int countZero = 0;
+                    for (int[] row : puzzle) {
+                        for (int number : row) {
+                            if (number == 0) countZero++;
+                        }
+                    }
+                    isCreatePuzzleCompleted = countZero == 1;
+                } while (isCreatePuzzleCompleted);
             }
 
             if (canMoveDown || canMoveUp || canMoveRight || canMoveLeft) {
