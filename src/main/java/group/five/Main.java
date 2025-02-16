@@ -1,5 +1,6 @@
 package group.five;
 
+import java.security.spec.RSAOtherPrimeInfo;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,7 +15,7 @@ import java.util.Random;
 import java.util.Scanner;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception{
         Scanner input = new Scanner(System.in);
         
         boolean canMoveDown = false, canMoveUp = false, canMoveLeft = false, canMoveRight = false;
@@ -27,107 +28,58 @@ public class Main {
         int selected_number = 0;
         LocalTime start = LocalTime.now();
         LocalTime end = LocalTime.now();
-        byte option = 0, mode = 0;
+        byte mode = 0;
 
-        int[][] puzzle = new int[][]{
-            {0, 0 ,0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0},
-            {0, 0, 0, 0}
-        };
+        boolean isValid = true;
+        System.out.println("============================");
+        System.out.println("=         MODE             =");
+        System.out.println("= 1. You Vs Computer       =");
+        System.out.println("= 2. Computer Vs Computer. =");
+        System.out.println("============================");
+        do {
+            System.out.print("Please choose mode: ");
+            try {
+                mode = input.nextByte();
+
+                if (mode != 1 && mode != 2) {
+                    System.out.println("Invalid Mode! Please choose again!");
+                    isValid = false;
+                } else isValid = true;
+            } catch (InputMismatchException misMatchError) {
+                System.out.println("Invalid Mode! Please choose again!");
+                input.nextLine();
+            }
+        } while (!isValid);
+
+        int[][] puzzle = Randomize();
         while (true) { 
             // clear console
             Clear();
-            count = 0;
+            if (!isSolvable(puzzle)) {
+                System.out.println("This puzzle cannot be solved, please try again!");
+                return;
+            }
 
-            boolean isValid = true;
-            System.out.println("=========================");
-            System.out.println("=         MODE          =");
-            System.out.println("= 1. Solve by you.      =");
-            System.out.println("= 2. Solve by computer. =");
-            System.out.println("=========================");
-            do {
-                System.out.print("Please choose mode: ");
-                try {
-                    mode = input.nextByte();
-
-                    if (mode != 1 && mode != 2) {
-                        System.out.println("Invalid Mode! Please choose again!");
-                        isValid = false;
-                    } else isValid = true;
-                } catch (InputMismatchException misMatchError) {
-                    System.out.println("Invalid Mode! Please choose again!");
-                    input.nextLine();
-                }
-            } while (!isValid);
-            
             Clear();
 
-            System.out.println("===============================");
-            System.out.println("=           OPTION            =");
-            System.out.println("= 1. Create the puzzle (you). =");
-            System.out.println("= 2. Generate the puzzle.     =");
-            System.out.println("===============================");
-            System.out.print("Please select the option: ");
-            do {
-                System.out.print("Please choose mode: ");
-                try {
-                    option = input.nextByte();
+            if (mode == 2) isWin = solvePuzzle(puzzle);
+            else isWin = isGoal(puzzle);
 
-                    if (option != 1 && option != 2) {
-                        System.out.println("Invalid Option! Please choose again!");
-                        isValid = false;
-                    } else isValid = true;
-                } catch (InputMismatchException misMatchError) {
-                    System.out.println("Invalid Option! Please choose again!");
-                    input.nextLine();
-                }
-            } while (!isValid);
-
-            boolean isCreatePuzzleCompleted = false;
-            if (option == 1 && mode == 1) {
-                do {
-                    DisplayPuzzle(puzzle);
-                    System.out.print("Please number to create the puzzle: ");
-
-                    int countPuzzleNumber = 0;
-                    for (int row = 0; row < puzzle.length; row++) {
-                        for (int col = 0; col < puzzle[row].length; col++) {
-                            countPuzzleNumber++;
-                        }
-                    }
-
-                    int countZero = 0;
-                    for (int[] row : puzzle) {
-                        for (int number : row) {
-                            if (number == 0) countZero++;
-                        }
-                    }
-                    isCreatePuzzleCompleted = countZero == 1;
-                } while (isCreatePuzzleCompleted);
+            if (isWin) {
+                end = LocalTime.now();
+                int startSecond = (start.getHour() * 3600) + (start.getMinute() * 60) + start.getSecond();
+                int endSecond = (end.getHour() * 3600) + (end.getMinute() * 60) + end.getSecond();
+                System.out.println("Total Time: " + (endSecond - startSecond) + "s");
+                if (mode == 1) System.out.println("You win!!!");
+                break;
             }
 
             if (canMoveDown || canMoveUp || canMoveRight || canMoveLeft) {
                 moves++;
-            } else {
-                System.out.println("Cannot move this number: ");
-                System.out.println("Please try again!");
             }
 
             // display total moves
             DisplayPuzzle(puzzle, moves);
-            
-            // win condition
-            isWin = isGoal(puzzle);
-
-            if (isWin) {
-                end = LocalTime.now(); 
-                int startSecond = (start.getHour() * 3600) + (start.getMinute() * 60) + start.getSecond();
-                int endSecond = (end.getHour() * 3600) + (end.getMinute() * 60) + end.getSecond();
-                System.out.println("Total Time: " + (endSecond - startSecond) + "s");
-                System.out.println("You win!!!");
-                break;
-            }
             
             // get puzzleber
             boolean isValidNumber = true;
@@ -249,7 +201,9 @@ public class Main {
         }
     }
 
-    static void DisplayPuzzle(int[][] puzzle) {
+    static void DisplayPuzzle(int[][] puzzle) throws Exception {
+        Clear();
+
         for (int i = 0; i < puzzle.length; i++) {
             System.out.println("+----+----+----+----+");
             for (int j = 0; j < puzzle[i].length; j++) {
@@ -261,9 +215,11 @@ public class Main {
             }
             System.out.println(i == 3 ? "\n+----+----+----+----+" : "");
         }
+
+        Thread.sleep(200);
     }
 
-    public static void solvePuzzle(int[][] startBoard) {
+    public static boolean solvePuzzle(int[][] startBoard) throws Exception {
         PriorityQueue<int[][]> openSet = new PriorityQueue<>(Comparator.comparingInt(Main::calculateF));
         Map<String, Integer> gScores = new HashMap<>();
         Map<String, int[][]> parentMap = new HashMap<>();
@@ -276,7 +232,7 @@ public class Main {
 
             if (isGoal(current)) {
                 printSolutionPath(current, parentMap);
-                return;
+                return isGoal(current);
             }
 
             for (int[][] neighbor : getNeighbors(current)) {
@@ -291,6 +247,8 @@ public class Main {
             }
         }
         System.out.println("No solution found.");
+
+        return true;
     }
 
     private static List<int[][]> getNeighbors(int[][] board) {
@@ -374,7 +332,7 @@ public class Main {
         return sb.toString();
     }
 
-    private static void printSolutionPath(int[][] state, Map<String, int[][]> parentMap) {
+    private static void printSolutionPath(int[][] state, Map<String, int[][]> parentMap) throws Exception {
         List<int[][]> path = new ArrayList<>();
         while (state != null) {
             path.add(state);
@@ -382,18 +340,48 @@ public class Main {
         }
         Collections.reverse(path);
         for (int[][] step : path) {
-            printBoard(step);
+            DisplayPuzzle(step);
         }
         System.out.println("Solved in " + (path.size() - 1) + " moves!");
     }
 
-    private static void printBoard(int[][] board) {
-        for (int[] row : board) {
-            for (int num : row) {
-                System.out.print((num == 0 ? "   " : (num < 10 ? "0" + num : num)) + " ");
+    public static boolean isSolvable(int[][] puzzle) {
+        int[] oneDArray = new int[16];
+        int index = 0;
+
+        // Flatten the 2D array into 1D
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                oneDArray[index++] = puzzle[i][j];
             }
-            System.out.println();
         }
-        System.out.println();
+
+        // Count inversions
+        int inversions = 0;
+        for (int i = 0; i < oneDArray.length; i++) {
+            for (int j = i + 1; j < oneDArray.length; j++) {
+                if (oneDArray[i] != 0 && oneDArray[j] != 0 && oneDArray[i] > oneDArray[j]) {
+                    inversions++;
+                }
+            }
+        }
+
+        // Find the row of the blank space (0) from the bottom
+        int blankRow = 0;
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                if (puzzle[i][j] == 0) {
+                    blankRow = i;
+                }
+            }
+        }
+        blankRow = 4 - blankRow;  // row from the bottom
+
+        // Solvability condition
+        if (blankRow % 2 == 1) {  // odd row
+            return inversions % 2 == 0;
+        } else {  // even row
+            return inversions % 2 == 1;
+        }
     }
 }
