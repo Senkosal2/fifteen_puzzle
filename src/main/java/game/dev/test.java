@@ -1,7 +1,10 @@
+package game.dev;
+
 import java.time.LocalTime;
 import java.util.Random;
 import java.util.Scanner;
-class update {
+
+public class test {
     public static void main(String[] args) {
         Scanner input = new Scanner(System.in);
         
